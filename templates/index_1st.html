@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shout and Gunshot Detection</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f6f6f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80%;
+            max-width: 800px;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 40px;
+        }
+        #result {
+            font-size: 40px;
+            font-weight: bold;
+            margin: 40px 0;
+            text-align: center;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+        }
+        .button {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            margin: 0 20px;
+        }
+        .button img {
+            width: 150px;
+            height: auto;
+        }
+        #waveGif {
+            width: 300px;
+            height: auto;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GUN SHOT AND DISTRESSED AUDIO DETECTION</h1>
+        <div id="result">PREDICTION: <span id="prediction"></span></div>
+        <img id="waveGif" src="/images/wave.gif" alt="Wave Animation">
+        <div class="button-container">
+            <button id="startBtn" class="button"><img src="/images/start_button_pg2.png" alt="Start"></button>
+            <button id="stopBtn" class="button"><img src="/images/stop_button.png" alt="Stop"></button>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            let resultInterval;
+
+            $('#startBtn').click(function() {
+                $.get('/start_prediction', function(data) {
+                    console.log('Prediction started');
+                    resultInterval = setInterval(getResult, 1000);
+                    $('#waveGif').show();
+                });
+            });
+
+            $('#stopBtn').click(function() {
+                $.get('/stop_prediction', function(data) {
+                    console.log('Prediction stopped');
+                    clearInterval(resultInterval);
+                    $('#waveGif').hide();
+                });
+            });
+
+            function getResult() {
+                $.get('/get_result', function(data) {
+                    if (data.result) {
+                        $('#prediction').text(data.result);
+                        if (data.result === "BACKGROUND NOISE") {
+                            $('#prediction').css('color', '#013220');
+                        } else if (data.result === "GUN SHOT DETECTED") {
+                            $('#prediction').css('color', '#8B0000');
+                        } else if (data.result === "DISTRESSED AUDIO DETECTED") {
+                            $('#prediction').css('color', '#00008B');
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

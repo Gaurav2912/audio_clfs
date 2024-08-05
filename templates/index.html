@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f6f6f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+        }
+        .button {
+            margin: 0 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Choose Detection Method</h1>
+        <div class="button-container">
+            <button class="button" onclick="window.location.href='/microphone'">
+                <img src="{{ url_for('static', filename='images/microphone_button.png') }}" alt="Microphone">
+            </button>
+            <button class="button" onclick="window.location.href='/file'">
+                <img src="{{ url_for('static', filename='images/file_button.png') }}" alt="File">
+            </button>
+        </div>
+    </div>
+</body>
+</html>

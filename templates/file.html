@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f6f6f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .back-button {
+            align-self: flex-start;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        .file-frame {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .file-label {
+            margin-left: 10px;
+        }
+        .result-label {
+            font-size: 40px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .gif-container {
+            margin: 20px 0;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .button {
+            margin: 0 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="window.location.href='/'">
+        <img src="{{ url_for('static', filename='images/back_arrow.png') }}" alt="Back">
+    </button>
+    
+    <h1>File Detection</h1>
+    
+    <div class="file-frame">
+        <input type="file" id="fileInput" accept=".wav" style="display: none;">
+        <button onclick="document.getElementById('fileInput').click()">Browse WAV File</button>
+        <span class="file-label" id="fileLabel">No file selected</span>
+    </div>
+    
+    <div class="result-label" id="resultLabel"></div>
+    
+    <div class="gif-container" id="gifContainer" style="display: none;">
+        <img src="{{ url_for('static', filename='images/wave.gif') }}" alt="Audio Wave">
+    </div>
+    
+    <div class="button-container">
+        <button class="button" id="startButton">
+            <img src="{{ url_for('static', filename='images/start_button.png') }}" alt="Start">
+        </button>
+        <button class="button" id="stopButton">
+            <img src="{{ url_for('static', filename='images/stop_button.png') }}" alt="Stop">
+        </button>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileLabel = document.getElementById('fileLabel');
+        const resultLabel = document.getElementById('resultLabel');
+        const gifContainer = document.getElementById('gifContainer');
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+
+        let pollInterval;
+
+        fileInput.addEventListener('change', handleFileUpload);
+        startButton.addEventListener('click', startPrediction);
+        stopButton.addEventListener('click', stopPrediction);
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                fileLabel.textContent = `Selected: ${file.name}`;
+                uploadFile(file);
+            }
+        }
+
+        function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload_file', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                }
+            });
+        }
+
+        function startPrediction() {
+            fetch('/start_file_prediction', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'started') {
+                        gifContainer.style.display = 'block';
+                        startPollingResults();
+                    } else if (data.error) {
+                        alert(data.error);
+                    }
+                });
+        }
+
+        function stopPrediction() {
+            fetch('/stop_prediction', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'stopped') {
+                        gifContainer.style.display = 'none';
+                        stopPollingResults();
+                    }
+                });
+        }
+
+        function startPollingResults() {
+            pollInterval = setInterval(() => {
+                fetch('/get_latest_result')
+                    .then(response => response.json())
+                    .then(data => {
+                        updateResultLabel(data.result);
+                    });
+            }, 1000);
+        }
+
+        function stopPollingResults() {
+            clearInterval(pollInterval);
+        }
+
+        function updateResultLabel(result) {
+            resultLabel.textContent = result;
+            if (result === "BACKGROUND NOISE") {
+                resultLabel.style.color = '#013220';
+            } else if (result === "GUN SHOT DETECTED") {
+                resultLabel.style.color = '#8B0000';
+            } else if (result === "DISTRESSED AUDIO DETECTED") {
+                resultLabel.style.color = '#00008B';
+            } else if (result === "HELP AUDIO DETECTED"){
+                resultLabel.style.color = '#4B0082';
+            } else if (result === "Audio processing completed") {
+                resultLabel.style.color = '#4B0082';
+                stopPollingResults();
+                gifContainer.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
