@@ -8,3 +8,4 @@ soundfile==0.12.1
 pygame==2.6.0
 tensorflow==2.13.1
 resampy==0.4.3
+openai-whisper
