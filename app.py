@@ -16,7 +16,7 @@ import whisper
 
 # Import your classification functions here
 from wav_file_script import function_shout_wav, run_yamnet_wav, whisper_help_wav
-from microphone_script import function_shout_mic, run_yamnet_mic, whisper_help_mic
+#from microphone_script import function_shout_mic, run_yamnet_mic, whisper_help_mic
 
 
 app = Flask(__name__)
@@ -106,33 +106,34 @@ def predict_microphone():
     global prediction_running, latest_result
     freq = 16000
     duration = 2
+    pass
 
-    while prediction_running:
-        recording = sd.rec(int(duration * freq), samplerate=freq, channels=1)
-        sd.wait()
-        file_path_16 = "temp_recording_16.wav"
-        wv.write(file_path_16, recording, freq, sampwidth=2)
+    # while prediction_running:
+    #     recording = sd.rec(int(duration * freq), samplerate=freq, channels=1)
+    #     sd.wait()
+    #     file_path_16 = "temp_recording_16.wav"
+    #     wv.write(file_path_16, recording, freq, sampwidth=2)
 
-        result_queue = Queue()
+    #     result_queue = Queue()
 
-        shout_thread = threading.Thread(target=function_shout_mic, args=(file_path_16, result_queue))
-        gunshot_thread = threading.Thread(target=run_yamnet_mic, args=(file_path_16, result_queue))
-        help_thread = threading.Thread(target=whisper_help_mic, args=(file_path_16, result_queue))
+    #     shout_thread = threading.Thread(target=function_shout_mic, args=(file_path_16, result_queue))
+    #     gunshot_thread = threading.Thread(target=run_yamnet_mic, args=(file_path_16, result_queue))
+    #     help_thread = threading.Thread(target=whisper_help_mic, args=(file_path_16, result_queue))
 
-        shout_thread.start()
-        gunshot_thread.start()
-        help_thread.start()
+    #     shout_thread.start()
+    #     gunshot_thread.start()
+    #     help_thread.start()
 
-        shout_thread.join()
-        gunshot_thread.join()
-        help_thread.join()
+    #     shout_thread.join()
+    #     gunshot_thread.join()
+    #     help_thread.join()
 
-        results = []
-        while not result_queue.empty():
-            results.append(result_queue.get())
+    #     results = []
+    #     while not result_queue.empty():
+    #         results.append(result_queue.get())
 
-        latest_result = update_detection_results(results)
-        time.sleep(0.5)
+    #     latest_result = update_detection_results(results)
+    #     time.sleep(0.5)
 
 def predict_file():
     global prediction_running, wav_file, latest_result
