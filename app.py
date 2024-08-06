@@ -3,7 +3,7 @@ import os
 import threading
 import time
 from queue import Queue
-import sounddevice as sd
+# import sounddevice as sd
 import wavio as wv
 import numpy as np
 import scipy.io.wavfile as wav
