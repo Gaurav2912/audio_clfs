@@ -6,10 +6,11 @@ sounddevice==0.4.7
 wavio==0.0.9
 soundfile==0.12.1
 pygame==2.6.0
-tensorflow==2.13.1
+tensorflow
 resampy==0.4.3
 sounddevice==0.4.7
-torchaudio==2.4.0
+torchaudio
 matplotlib==3.7.5
-torchvision==0.19.0
+torchvision
 openai-whisper
+torch
