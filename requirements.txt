@@ -1,4 +1,5 @@
 pydub
+simpleaudio
 Werkzeug==3.0.3
 Flask==3.0.3
 numpy==1.23.3
