@@ -10,12 +10,14 @@ from scipy.signal import resample
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from werkzeug.utils import secure_filename
 import soundfile as sf
-import whisper
 from pydub import AudioSegment
-from pydub.playback import play
+import simpleaudio as sa
+import whisper
 
 # Import your classification functions here
 from wav_file_script import function_shout_wav, run_yamnet_wav, whisper_help_wav
+# from microphone_script import function_shout_mic, run_yamnet_mic, whisper_help_mic
+
 
 app = Flask(__name__)
 
@@ -29,8 +31,7 @@ prediction_running = False
 prediction_thread = None
 wav_file = None
 latest_result = "No prediction yet"
-audio = None
-play_obj = None
+play_obj = None  # Variable to keep track of the playback object
 
 @app.route('/')
 def index():
@@ -54,12 +55,10 @@ def start_microphone_prediction():
 
 @app.route('/start_file_prediction', methods=['POST'])
 def start_file_prediction():
-    global prediction_running, prediction_thread, wav_file, audio, play_obj
+    global prediction_running, prediction_thread, wav_file, play_obj
     if not wav_file:
         return jsonify({"error": "Please select a WAV file first."})
     prediction_running = True
-    audio = AudioSegment.from_wav(wav_file)
-    play_obj = play(audio)
     prediction_thread = threading.Thread(target=predict_file)
     prediction_thread.start()
     return jsonify({"status": "started"})
@@ -69,7 +68,7 @@ def stop_prediction():
     global prediction_running, prediction_thread, play_obj
     prediction_running = False
     if play_obj:
-        play_obj.stop()
+        play_obj.stop()  # Stop the playback
     if prediction_thread:
         prediction_thread.join()
         prediction_thread = None
@@ -105,16 +104,46 @@ def predict_microphone():
     duration = 2
     pass
 
-    # Microphone prediction code (commented out in your original script)
+    # while prediction_running:
+    #     recording = sd.rec(int(duration * freq), samplerate=freq, channels=1)
+    #     sd.wait()
+    #     file_path_16 = "temp_recording_16.wav"
+    #     wv.write(file_path_16, recording, freq, sampwidth=2)
+
+    #     result_queue = Queue()
+
+    #     shout_thread = threading.Thread(target=function_shout_mic, args=(file_path_16, result_queue))
+    #     gunshot_thread = threading.Thread(target=run_yamnet_mic, args=(file_path_16, result_queue))
+    #     help_thread = threading.Thread(target=whisper_help_mic, args=(file_path_16, result_queue))
+
+    #     shout_thread.start()
+    #     gunshot_thread.start()
+    #     help_thread.start()
+
+    #     shout_thread.join()
+    #     gunshot_thread.join()
+    #     help_thread.join()
+
+    #     results = []
+    #     while not result_queue.empty():
+    #         results.append(result_queue.get())
+
+    #     latest_result = update_detection_results(results)
+    #     time.sleep(0.5)
 
 def predict_file():
-    global prediction_running, wav_file, latest_result
+    global prediction_running, wav_file, latest_result, play_obj
     wav_data, sr = sf.read(wav_file, dtype=np.int16)
     duration = len(wav_data) // sr
     chunk_duration = 2  # 2 seconds
     chunk_samples = chunk_duration * sr
     is_sleep = True
     model_wh = whisper.load_model("tiny.en")
+
+    # Load and play the audio file using pydub and simpleaudio
+    audio_segment = AudioSegment.from_wav(wav_file)
+    play_obj = sa.play_buffer(audio_segment.raw_data, num_channels=audio_segment.channels, bytes_per_sample=audio_segment.sample_width, sample_rate=audio_segment.frame_rate)
+
     for chunk_start in range(0, len(wav_data), chunk_samples):
         if not prediction_running:
             break
@@ -142,6 +171,8 @@ def predict_file():
             results.append(result_queue.get())
 
         print(results)
+        # for result, prob in results:
+        #     print(f"{result}: {prob}")
         tac = time.perf_counter()
         print(f"{tac-tic}, time taken.")
 
@@ -195,6 +226,8 @@ def update_detection_results(results):
     
     return detection_result
 
+
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    app.run(debug=True, port=8001, host='0.0.0.0')
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)

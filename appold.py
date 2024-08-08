@@ -225,14 +225,6 @@ def update_detection_results(results):
     
     return detection_result
 
-def down_sample(input_file):
-    target_sample_rate = 32000
-    original_sample_rate, audio_data = wav.read(input_file)
-    number_of_samples = round(len(audio_data) * float(target_sample_rate) / original_sample_rate)
-    resampled_audio = resample(audio_data, number_of_samples)
-    output_file = 'temp_recording_32.wav'
-    wav.write(output_file, target_sample_rate, resampled_audio.astype(audio_data.dtype))
-    return output_file
 
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
