@@ -1,3 +1,4 @@
+pygame
 Werkzeug==3.0.3
 Flask==3.0.3
 numpy==1.23.3
@@ -5,7 +6,6 @@ scipy==1.10.1
 sounddevice==0.4.7
 wavio==0.0.9
 soundfile==0.12.1
-pygame==2.6.0
 tensorflow
 resampy==0.4.3
 sounddevice==0.4.7
